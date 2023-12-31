@@ -2,8 +2,8 @@
 
 resource "aws_security_group" "jump-secgrp" {
   name        = "jump-sg"
-  description = ""
-  vpc_id      = ""
+  description = "this security group allows connection to the jump server"
+  vpc_id      = var.vpc_id
 
   ingress {
     description      = "this allows https connection on port 443"
@@ -45,17 +45,17 @@ resource "aws_security_group" "jump-secgrp" {
 # create security group for app server
 
 resource "aws_security_group" "app-secgrp" {
-  name        = ""
-  description = ""
-  vpc_id      = ""
+  name        = "app-sg"
+  description = "this security group allows connection in to the app server"
+  vpc_id      = var.vpc_id
 
  
   ingress {
-    description      = ""
+    description      = "this allows ssh conection from the jump sg on port 22"
     from_port        = 22
     to_port          = 22
     protocol         = "tcp"
-    cidr_blocks      = []
+    cidr_blocks      = [aws_security_group.jump-secgrp.id]
       }
    
   egress {
@@ -66,7 +66,7 @@ resource "aws_security_group" "app-secgrp" {
   }
 
   tags = {
-    Name = "app-sg"
+    Name = "${project_name}-app-sg"
   }
 }
 
@@ -74,17 +74,17 @@ resource "aws_security_group" "app-secgrp" {
 # create security group for database server
 
 resource "aws_security_group" "db-secgrp" {
-  name        = ""
-  description = ""
-  vpc_id      = ""
+  name        = "db-sg"
+  description = "this allows connection on db server"
+  vpc_id      = var.vpc_id
 
  
   ingress {
-    description      = ""
+    description      = "this allows ssh connection from jump server"
     from_port        = 22
     to_port          = 22
     protocol         = "tcp"
-    cidr_blocks      = []
+    cidr_blocks      = [aws_security_group.jump-secgrp.id]
       }
    
   egress {
@@ -104,16 +104,16 @@ resource "aws_security_group" "db-secgrp" {
 # create security group for application load balancer
 
 resource "aws_security_group" "alb-secgrp" {
-  name        = ""
-  description = ""
+  name        = "alb-sg"
+  description = "this allows connection to alb"
   vpc_id      = ""
 
   ingress {
-    description      = ""
+    description      = "this allows https connection on alb from app"
     from_port        = 443
     to_port          = 443
     protocol         = "tcp"
-    cidr_blocks      = []
+    cidr_blocks      = [aws_security_group.app-secgrp.id]
   }
   
   ingress {
@@ -140,6 +140,6 @@ resource "aws_security_group" "alb-secgrp" {
   }
 
   tags = {
-    Name = "alb-sg"
+    Name = "${project_name}-alb-sg"
   }
 }

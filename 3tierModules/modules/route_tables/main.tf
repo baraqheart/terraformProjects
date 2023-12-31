@@ -2,7 +2,7 @@
 ## Create route table for public subnet  
 
 resource "aws_route_table" "public-rt" {
-  vpc_id = aws_vpc.vpc.id
+  vpc_id = var.vpc_id
 
   route {
     cidr_block = "0.0.0.0/0"
@@ -10,7 +10,7 @@ resource "aws_route_table" "public-rt" {
  }
   
   tags = {
-    Name = "${project_name}-public-rt"
+    Name = "${var.project_name}-public-rt"
   }
 }
 
@@ -18,7 +18,7 @@ resource "aws_route_table" "public-rt" {
 # create an association for public subnet
 
 resource "aws_route_table_association" "public-rt-association" {
-  subnet_id      = aws_subnet.pub-subnet-az1.id
+  subnet_id      = [var.pub_subnet_az1_id,var.pub_subnet_az2_id]
   route_table_id = aws_route_table.public-rt.id
 }
 
@@ -34,7 +34,7 @@ resource "aws_route_table" "private-rt" {
   }
   
   tags = {
-    Name = "${project_name}-private-rt"
+    Name = "${var.project_name}-private-rt"
   }
 }
 
@@ -42,6 +42,6 @@ resource "aws_route_table" "private-rt" {
 # create a route tableee association for private subnet
 
 resource "aws_route_table_association" "private-rt-association" {
-  subnet_id      = aws_subnet.private-app-subnet-az1.id
+  subnet_id      = [var.private_app_subnet_az1_id,var.private_app_subnet_az2_id]
   route_table_id = aws_route_table.private-rt.id
 }
