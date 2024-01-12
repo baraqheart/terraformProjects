@@ -27,7 +27,8 @@ resource "aws_security_group" "jump-secgrp" {
     to_port          = 22
     protocol         = "tcp"
     cidr_blocks      = []
-      }
+  
+  }
    
   egress {
     from_port        = 0
@@ -55,9 +56,24 @@ resource "aws_security_group" "app-secgrp" {
     from_port        = 22
     to_port          = 22
     protocol         = "tcp"
-    cidr_blocks      = [aws_security_group.jump-secgrp.id]
+    security_groups  = [aws_security_group.jump-secgrp.id]
       }
    
+  ingress {
+    description      = "this allows https connection on alb from app"
+    from_port        = 443
+    to_port          = 443
+    protocol         = "tcp"
+    security_groups  = [aws_security_group.alb-secgrp.id]
+  }
+  
+  ingress {
+    description      = "this allows http connection on alb from app"
+    from_port        = 80
+    to_port          = 80
+    protocol         = "tcp"
+    security_groups  = [aws_security_group.alb-secgrp.id]
+  }
   egress {
     from_port        = 0
     to_port          = 0
@@ -66,7 +82,7 @@ resource "aws_security_group" "app-secgrp" {
   }
 
   tags = {
-    Name = "${project_name}-app-sg"
+    Name = "${var.project_name}-app-sg"
   }
 }
 
@@ -95,7 +111,7 @@ resource "aws_security_group" "db-secgrp" {
   }
 
   tags = {
-    Name = "db-sg"
+    Name = "${var.project_name}-db-sg"
   }
 }
 
@@ -106,32 +122,25 @@ resource "aws_security_group" "db-secgrp" {
 resource "aws_security_group" "alb-secgrp" {
   name        = "alb-sg"
   description = "this allows connection to alb"
-  vpc_id      = ""
+  vpc_id      = var.vpc_id
 
   ingress {
     description      = "this allows https connection on alb from app"
     from_port        = 443
     to_port          = 443
     protocol         = "tcp"
-    cidr_blocks      = [aws_security_group.app-secgrp.id]
+    security_groups  = ["0.0.0.0/0"]
   }
   
   ingress {
-    description      = ""
+    description      = "this allows http connection on alb from app"
     from_port        = 80
     to_port          = 80
     protocol         = "tcp"
-    cidr_blocks      = []
+    security_groups  = ["0.0.0.0/0"]
   }
 
-  ingress {
-    description      = ""
-    from_port        = 8080
-    to_port          = 8080
-    protocol         = "tcp"
-    cidr_blocks      = []
-      }
-   
+  
   egress {
     from_port        = 0
     to_port          = 0
@@ -140,6 +149,6 @@ resource "aws_security_group" "alb-secgrp" {
   }
 
   tags = {
-    Name = "${project_name}-alb-sg"
+    Name = "${var.project_name}-alb-sg"
   }
 }

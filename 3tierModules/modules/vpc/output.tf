@@ -1,6 +1,6 @@
 output "vpc_id" {
   value = aws_vpc.vpc.id
-}
+} 
 
 output "region" {
   value = var.region
@@ -24,4 +24,8 @@ output "private_app_subnet_az2_id" {
 
 output "pub_subnet_az2_id" {
   value = aws_subnet.pub-subnet-az2.id
+}
+
+output "igw_id" {
+  value = aws_internet_gateway.igw.id
 }
